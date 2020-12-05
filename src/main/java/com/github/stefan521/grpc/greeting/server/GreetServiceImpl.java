@@ -5,6 +5,7 @@ import io.grpc.stub.StreamObserver;
 
 public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
 
+    // Unary
     @Override
     public void greet(GreetRequest request, StreamObserver<GreetResponse> responseObserver) {
         Greeting greeting = request.getGreeting();
@@ -19,6 +20,7 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    // Server Streaming
     @Override
     public void greetManyTimes(GreetManyTimesRequest request, StreamObserver<GreetManyTimesResponse> responseObserver) {
         String firstName = request.getGreeting().getFirstName();
@@ -39,5 +41,35 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
         } finally {
             responseObserver.onCompleted();
         }
+    }
+
+    // Client Streaming
+    @Override
+    public StreamObserver<LongGreetRequest> longGreet(StreamObserver<LongGreetResponse> responseObserver) {
+        StreamObserver<LongGreetRequest> requestObserver = new StreamObserver<LongGreetRequest>() {
+
+            String result = "";
+
+            @Override
+            public void onNext(LongGreetRequest value) {
+                result += "Hello " + value.getGreeting().getFirstName() + "! ";
+            }
+
+            @Override
+            public void onError(Throwable t) {
+            }
+
+            @Override
+            public void onCompleted() {
+                responseObserver.onNext(
+                        LongGreetResponse.newBuilder()
+                                .setResult(result)
+                                .build()
+                );
+                responseObserver.onCompleted();
+            }
+        };
+
+        return requestObserver;
     }
 }
