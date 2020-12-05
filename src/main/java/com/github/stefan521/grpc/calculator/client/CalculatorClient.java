@@ -5,24 +5,27 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 public class CalculatorClient {
     ManagedChannel channel;
 
-    public void run() {
+    private void run() {
         channel = ManagedChannelBuilder.forAddress("localhost", 50052)
                 .usePlaintext() // turns off SSL
                 .build();
 
 //        doUnaryCall(channel);
 //        doServerStreamingCall(channel);
-        doClientStreamingCall(channel);
+//        doClientStreamingCall(channel);
+        doBiDiStreamingCall(channel);
 
+        System.out.println("Shutting down server");
         channel.shutdown();
     }
 
-    public void doUnaryCall(ManagedChannel channel) {
+    private void doUnaryCall(ManagedChannel channel) {
         CalculatorServiceGrpc.CalculatorServiceBlockingStub calculatorClient = CalculatorServiceGrpc.newBlockingStub(channel);
 
         SumRequest request = SumRequest.newBuilder()
@@ -35,7 +38,7 @@ public class CalculatorClient {
         System.out.println("We got the sum result of " + response);
     }
 
-    public void doServerStreamingCall(ManagedChannel channel) {
+    private void doServerStreamingCall(ManagedChannel channel) {
         CalculatorServiceGrpc.CalculatorServiceBlockingStub calculatorClient = CalculatorServiceGrpc.newBlockingStub(channel);
         long numberToDecompose = 9941241298521L;
 
@@ -48,7 +51,7 @@ public class CalculatorClient {
         );
     }
 
-    public void doClientStreamingCall(ManagedChannel channel) {
+    private void doClientStreamingCall(ManagedChannel channel) {
         CalculatorServiceGrpc.CalculatorServiceStub calculatorClient = CalculatorServiceGrpc.newStub(channel);
         CountDownLatch latch = new CountDownLatch(1);
         StreamObserver<AverageIntegersRequest> requestStreamObserver = calculatorClient.averageIntegers(new StreamObserver<AverageIntegersResponse>() {
@@ -59,6 +62,7 @@ public class CalculatorClient {
 
             @Override
             public void onError(Throwable t) {
+                latch.countDown();
                 t.printStackTrace();
             }
 
@@ -83,6 +87,41 @@ public class CalculatorClient {
             e.printStackTrace();
         }
 
+    }
+
+    private void doBiDiStreamingCall(ManagedChannel channel) {
+        CalculatorServiceGrpc.CalculatorServiceStub client = CalculatorServiceGrpc.newStub(channel);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        StreamObserver<MaxIntegersRequest> requestStream = client.maxInteger(new StreamObserver<MaxIntegersResponse>() {
+            @Override
+            public void onNext(MaxIntegersResponse value) {
+                System.out.println("Server replied with new max " + value.getMaximum());
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                latch.countDown();
+                t.printStackTrace();
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("Server is done");
+                latch.countDown();
+            }
+        });
+
+        Arrays.asList(1, 5, 3, 6, 2, 20).forEach(num -> requestStream.onNext(MaxIntegersRequest.newBuilder()
+                .setNumber(num)
+                .build())
+        );
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {

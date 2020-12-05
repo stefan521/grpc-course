@@ -34,6 +34,14 @@ message LongGreetResponse {
   string result = 1;
 }
 
+message GreetEveryoneRequest {
+  Greeting greeting = 1;
+}
+
+message GreetEveryoneResponse {
+  string result = 1;
+}
+
 // convention name + service
 service GreetService {
   // Unary
@@ -45,4 +53,7 @@ service GreetService {
 
   // Client Streaming
   rpc LongGreet(stream LongGreetRequest) returns (LongGreetResponse) {};
+
+  // BiDi Streaming
+  rpc GreetEveryone(stream GreetEveryoneRequest) returns (stream GreetEveryoneResponse) {};
 }

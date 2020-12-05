@@ -44,9 +44,9 @@ public class CalculatorServiceImpl extends CalculatorServiceGrpc.CalculatorServi
 
     @Override
     public StreamObserver<AverageIntegersRequest> averageIntegers(StreamObserver<AverageIntegersResponse> responseObserver) {
-        ArrayList<Integer> numbers = new ArrayList<>();
-
         return new StreamObserver<AverageIntegersRequest>() {
+            ArrayList<Integer> numbers = new ArrayList<>(); // keep state in the StreamObserver, not outside
+
             @Override
             public void onNext(AverageIntegersRequest value) {
                 numbers.add(value.getNumber());
@@ -68,6 +68,36 @@ public class CalculatorServiceImpl extends CalculatorServiceGrpc.CalculatorServi
                                 .build()
                 );
 
+                responseObserver.onCompleted();
+            }
+        };
+    }
+
+    @Override
+    public StreamObserver<MaxIntegersRequest> maxInteger(StreamObserver<MaxIntegersResponse> responseObserver) {
+        return new StreamObserver<MaxIntegersRequest>() {
+            int currentMax = Integer.MIN_VALUE;
+
+            @Override
+            public void onNext(MaxIntegersRequest value) {
+                int nextValue = value.getNumber();
+
+                if ( nextValue > currentMax) {
+                    currentMax = nextValue;
+                    responseObserver.onNext(MaxIntegersResponse.newBuilder()
+                            .setMaximum(currentMax)
+                            .build());
+                }
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                responseObserver.onCompleted();
+                t.printStackTrace();
+            }
+
+            @Override
+            public void onCompleted() {
                 responseObserver.onCompleted();
             }
         };

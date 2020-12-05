@@ -28,10 +28,20 @@ message AverageIntegersResponse {
   double average = 1;
 }
 
+message MaxIntegersRequest {
+  int32 number = 1;
+}
+
+message MaxIntegersResponse {
+  int32 maximum = 1;
+}
+
 service CalculatorService {
   rpc Sum(SumRequest) returns (SumResponse) {};
 
   rpc DecomposeIntoPrimes(DecomposeIntoPrimesRequest) returns (stream DecomposeIntoPrimesResponse) {};
 
   rpc AverageIntegers(stream AverageIntegersRequest) returns (AverageIntegersResponse) {};
+
+  rpc MaxInteger(stream MaxIntegersRequest) returns (stream MaxIntegersResponse) {};
 }
