@@ -11,7 +11,6 @@ public class GreetingServer {
 
         Server server = ServerBuilder.forPort(50051)
                 .addService(new GreetServiceImpl())
-                .addService(new SumServiceImpl())
                 .build();
 
         server.start();

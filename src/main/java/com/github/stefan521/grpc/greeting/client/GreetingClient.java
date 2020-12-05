@@ -1,9 +1,6 @@
 package com.github.stefan521.grpc.greeting.client;
 
-import com.proto.greet.GreetRequest;
-import com.proto.greet.GreetResponse;
-import com.proto.greet.GreetServiceGrpc;
-import com.proto.greet.Greeting;
+import com.proto.greet.*;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
@@ -22,21 +19,34 @@ public class GreetingClient {
 
         GreetServiceGrpc.GreetServiceBlockingStub greetClient = GreetServiceGrpc.newBlockingStub(channel);
 
-        Greeting greeting = Greeting.newBuilder()
-                .setFirstName("stefan")
-                .setLastName("521")
+        // Unary
+//        Greeting greeting = Greeting.newBuilder()
+//                .setFirstName("stefan")
+//                .setLastName("521")
+//                .build();
+//
+//        GreetRequest greetRequest = GreetRequest.newBuilder()
+//                .setGreeting(greeting)
+//                .build();
+//
+//        GreetResponse response = greetClient.greet(greetRequest);
+//
+//        System.out.println("Got Greet Response " + response);
+//
+//        // do something
+//        System.out.println("Shutting down channel");
+
+        // Server Streaming
+        GreetManyTimesRequest greetManyTimesRequest = GreetManyTimesRequest.newBuilder()
+                .setGreeting(Greeting.newBuilder().setFirstName("Stefan").build())
                 .build();
 
-        GreetRequest greetRequest = GreetRequest.newBuilder()
-                .setGreeting(greeting)
-                .build();
+        // stream the responses in a blocking manner
+        greetClient.greetManyTimes(greetManyTimesRequest)
+                .forEachRemaining(greetManyTimesResponse -> {
+                    System.out.println(greetManyTimesResponse.getResult());
+                });
 
-        GreetResponse response = greetClient.greet(greetRequest);
-
-        System.out.println("Got Greet Response " + response);
-
-        // do something
-        System.out.println("Shutting down channel");
         channel.shutdown();
     }
 }

@@ -18,9 +18,19 @@ message GreetResponse {
   string result = 1;
 }
 
+message GreetManyTimesRequest {
+  Greeting greeting = 1;
+}
+
+message GreetManyTimesResponse {
+  string result = 1;
+}
+
 // convention name + service
 service GreetService {
   // Unary
   // convention Request named as name of method + request. same for response
   rpc Greet(GreetRequest) returns (GreetResponse) {};
+
+  rpc GreetManyTimes(GreetManyTimesRequest) returns (stream GreetManyTimesResponse) {};
 }
