@@ -2,8 +2,7 @@ package com.github.stefan521.grpc.greeting.client;
 
 import com.proto.dummy.DummyServiceGrpc;
 import com.proto.greet.*;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 
 import java.util.Arrays;
@@ -23,7 +22,8 @@ public class GreetingClient {
 //        doUnaryCall(channel);
 //        doServerStreamingCall(channel);
 //        doClientStreamingCall(channel);
-        doBiDiStreamingCall(channel);
+//        doBiDiStreamingCall(channel);
+        doUnaryCallWithDeadline(channel);
 
         channel.shutdown();
     }
@@ -150,6 +150,48 @@ public class GreetingClient {
             latch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void doUnaryCallWithDeadline(ManagedChannel channel) {
+        GreetServiceGrpc.GreetServiceBlockingStub blockingStub = GreetServiceGrpc.newBlockingStub(channel);
+
+        // Should work.
+        try {
+            GreetWithDeadlineResponse response = blockingStub
+                    .withDeadline(Deadline.after(3000, TimeUnit.MILLISECONDS))
+                    .greetWithDeadline(
+                            GreetWithDeadlineRequest.newBuilder()
+                                    .setGreeting(Greeting.newBuilder().setFirstName("Stefan").build())
+                                    .build()
+                    );
+
+            System.out.println("Response: " + response);
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus() == Status.DEADLINE_EXCEEDED) {
+                System.out.println("Deadline has been exceeded, we don't want the answer");
+            } else {
+                e.printStackTrace();
+            }
+        }
+
+        // Should expire.
+        try {
+            GreetWithDeadlineResponse response = blockingStub
+                    .withDeadline(Deadline.after(100, TimeUnit.MILLISECONDS))
+                    .greetWithDeadline(
+                            GreetWithDeadlineRequest.newBuilder()
+                                    .setGreeting(Greeting.newBuilder().setFirstName("Stefan").build())
+                                    .build()
+                    );
+
+            System.out.println("Response: " + response);
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus() == Status.DEADLINE_EXCEEDED) {
+                System.out.println("Deadline has been exceeded, we don't want the answer");
+            } else {
+                e.printStackTrace();
+            }
         }
     }
 

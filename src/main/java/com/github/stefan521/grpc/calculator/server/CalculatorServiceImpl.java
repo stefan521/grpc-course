@@ -1,6 +1,7 @@
 package com.github.stefan521.grpc.calculator.server;
 
 import com.proto.greet.*;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
 import java.util.ArrayList;
@@ -101,5 +102,27 @@ public class CalculatorServiceImpl extends CalculatorServiceGrpc.CalculatorServi
                 responseObserver.onCompleted();
             }
         };
+    }
+
+    @Override
+    public void squareRoot(SquareRootRequest request, StreamObserver<SquareRootResponse> responseObserver) {
+        int number = request.getNumber();
+
+        if (number >= 0) {
+            double numberRoot = Math.sqrt(number);
+
+            responseObserver.onNext(
+                    SquareRootResponse.newBuilder()
+                            .setNumberRoot(numberRoot)
+                            .build()
+            );
+        } else {
+            responseObserver.onError(
+                    Status.INVALID_ARGUMENT
+                    .withDescription("Received negative number")
+                            .augmentDescription("Number sent: " + number)
+                    .asRuntimeException()
+            );
+        }
     }
 }

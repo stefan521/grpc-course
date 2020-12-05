@@ -36,6 +36,14 @@ message MaxIntegersResponse {
   int32 maximum = 1;
 }
 
+message SquareRootRequest {
+  int32 number = 1;
+}
+
+message SquareRootResponse {
+  double number_root = 1;
+}
+
 service CalculatorService {
   rpc Sum(SumRequest) returns (SumResponse) {};
 
@@ -44,4 +52,7 @@ service CalculatorService {
   rpc AverageIntegers(stream AverageIntegersRequest) returns (AverageIntegersResponse) {};
 
   rpc MaxInteger(stream MaxIntegersRequest) returns (stream MaxIntegersResponse) {};
+
+  // this RPC will throw an exception if the sent number is negative
+  rpc SquareRoot(SquareRootRequest) returns (SquareRootResponse) {};
 }
