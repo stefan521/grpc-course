@@ -11,13 +11,56 @@ message Blog {
 }
 
 message CreateBlogRequest {
-  Blog blog = 1; // the id should matter
+  Blog blog = 1; // Mongo assigns an id automagically.
 }
 
 message CreateBlogResponse {
   Blog blog = 1; // the id will correspond to the one in MongoDB
 }
 
+message ReadBlogRequest {
+  string blog_id = 1;
+}
+
+message ReadBlogResponse {
+  Blog blog = 1;
+}
+
+message UpdateBlogRequest {
+  Blog blog = 1;
+}
+
+message UpdateBlogResponse {
+  Blog blog = 1;
+}
+
+message DeleteBlogRequest {
+  string blog_id = 1;
+}
+
+message DeleteBlogResponse {
+  string blog_id = 1;
+}
+
+message ListBlogsRequest {
+
+}
+
+message ListBlogsResponse {
+  Blog blog = 1;
+}
+
 service BlogService {
   rpc CreateBlog(CreateBlogRequest) returns (CreateBlogResponse) {};
+
+  // Returns NOT_FOUND if blog with given id does not exist
+  rpc ReadBlog(ReadBlogRequest) returns (ReadBlogResponse) {};
+
+  // Returns updated blog or errors if the blog does not exist.
+  rpc UpdateBlog(UpdateBlogRequest) returns (UpdateBlogResponse) {};
+
+  // Returns the blog that was deleted or errors if the blog does not exist.
+  rpc DeleteBlog(DeleteBlogRequest) returns (DeleteBlogResponse) {};
+
+  rpc ListBlogs(ListBlogsRequest) returns (stream ListBlogsResponse) {};
 }
