@@ -8,17 +8,23 @@ import io.grpc.stub.StreamObserver;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
+
 
 public class GreetingClient {
 
-    ManagedChannel channel ;
+    protected ManagedChannel channel;
 
-    private void run() {
+    public GreetingClient() {
         channel = ManagedChannelBuilder.forAddress("localhost", 50051)
                 .usePlaintext() // not something to use in production, disables SSL
                 .build();
+    }
 
+    public GreetingClient(ManagedChannel managedChannel) {
+        channel = managedChannel;
+    }
+
+    private void run() {
 //        doUnaryCall(channel);
 //        doServerStreamingCall(channel);
 //        doClientStreamingCall(channel);
@@ -26,6 +32,21 @@ public class GreetingClient {
         doUnaryCallWithDeadline(channel);
 
         channel.shutdown();
+    }
+
+    public String greet(String name) {
+        GreetServiceGrpc.GreetServiceBlockingStub greetClient = GreetServiceGrpc.newBlockingStub(channel);
+
+        GreetRequest greetRequest = GreetRequest.newBuilder()
+                .setGreeting(
+                        Greeting.newBuilder()
+                            .setFirstName(name)
+                )
+                .build();
+
+        GreetResponse response = greetClient.greet(greetRequest);
+
+        return response.getResult();
     }
 
     private void doUnaryCall(ManagedChannel channel) {
