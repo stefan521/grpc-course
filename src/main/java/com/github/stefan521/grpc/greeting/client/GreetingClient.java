@@ -1,6 +1,5 @@
 package com.github.stefan521.grpc.greeting.client;
 
-import com.proto.dummy.DummyServiceGrpc;
 import com.proto.greet.*;
 import io.grpc.*;
 import io.grpc.stub.StreamObserver;
@@ -25,10 +24,6 @@ public class GreetingClient {
     }
 
     private void run() {
-//        doUnaryCall(channel);
-//        doServerStreamingCall(channel);
-//        doClientStreamingCall(channel);
-//        doBiDiStreamingCall(channel);
         doUnaryCallWithDeadline(channel);
 
         channel.shutdown();
@@ -47,26 +42,6 @@ public class GreetingClient {
         GreetResponse response = greetClient.greet(greetRequest);
 
         return response.getResult();
-    }
-
-    private void doUnaryCall(ManagedChannel channel) {
-        DummyServiceGrpc.DummyServiceBlockingStub syncClient = DummyServiceGrpc.newBlockingStub(channel);
-        DummyServiceGrpc.DummyServiceFutureStub asyncClient = DummyServiceGrpc.newFutureStub(channel);
-        GreetServiceGrpc.GreetServiceBlockingStub greetClient = GreetServiceGrpc.newBlockingStub(channel);
-
-        Greeting greeting = Greeting.newBuilder()
-                .setFirstName("stefan")
-                .setLastName("521")
-                .build();
-
-        GreetRequest greetRequest = GreetRequest.newBuilder()
-                .setGreeting(greeting)
-                .build();
-
-        GreetResponse response = greetClient.greet(greetRequest);
-
-        System.out.println("Got Greet Response " + response);
-        System.out.println("Shutting down channel");
     }
 
     private void doServerStreamingCall(ManagedChannel channel) {

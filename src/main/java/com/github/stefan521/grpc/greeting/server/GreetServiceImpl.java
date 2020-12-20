@@ -26,22 +26,17 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
     public void greetManyTimes(GreetManyTimesRequest request, StreamObserver<GreetManyTimesResponse> responseObserver) {
         String firstName = request.getGreeting().getFirstName();
 
-        try {
-            for (int i = 0; i < 10; i++) {
-                String result = "Hello " + firstName + ", response number: " + i;
+        for (int i = 0; i < 10; i++) {
+            String result = "Hello " + firstName + ", response number: " + i;
 
-                GreetManyTimesResponse response = GreetManyTimesResponse.newBuilder()
-                        .setResult(result)
-                        .build();
+            GreetManyTimesResponse response = GreetManyTimesResponse.newBuilder()
+                    .setResult(result)
+                    .build();
 
-                responseObserver.onNext(response);
-                Thread.sleep(1000);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            responseObserver.onCompleted();
+            responseObserver.onNext(response);
         }
+
+        responseObserver.onCompleted();
     }
 
     // Client Streaming
@@ -102,7 +97,7 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
 
     @Override
     public void greetWithDeadline(GreetWithDeadlineRequest request, StreamObserver<GreetWithDeadlineResponse> responseObserver) {
-        int delaysCount = 3;
+        int delaysCount = 5;
         int delayMs = 100;
 
         Context current = Context.current();
