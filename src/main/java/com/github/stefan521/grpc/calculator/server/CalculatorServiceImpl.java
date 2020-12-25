@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public class CalculatorServiceImpl extends CalculatorServiceGrpc.CalculatorServiceImplBase {
     @Override
-    public void sum(SumRequest request, StreamObserver<SumResponse> responseObserver) {
+    public void sum(SumRequest request, StreamObserver<SumResponse> responseObserver) { // Unary
         int firstOperand = request.getFirstOperand();
         int secondOperand = request.getSecondOperand();
 
@@ -23,7 +23,7 @@ public class CalculatorServiceImpl extends CalculatorServiceGrpc.CalculatorServi
     }
 
     @Override
-    public void decomposeIntoPrimes(DecomposeIntoPrimesRequest request, StreamObserver<DecomposeIntoPrimesResponse> responseObserver) {
+    public void decomposeIntoPrimes(DecomposeIntoPrimesRequest request, StreamObserver<DecomposeIntoPrimesResponse> responseObserver) { // Server Streaming
         long numberToDecompose = request.getNumber();
         long divisor = 2L;
 
@@ -44,7 +44,7 @@ public class CalculatorServiceImpl extends CalculatorServiceGrpc.CalculatorServi
     }
 
     @Override
-    public StreamObserver<AverageIntegersRequest> averageIntegers(StreamObserver<AverageIntegersResponse> responseObserver) {
+    public StreamObserver<AverageIntegersRequest> averageIntegers(StreamObserver<AverageIntegersResponse> responseObserver) { // Client Streaming
         return new StreamObserver<AverageIntegersRequest>() {
             ArrayList<Integer> numbers = new ArrayList<>(); // keep state in the StreamObserver, not outside
 
@@ -75,7 +75,7 @@ public class CalculatorServiceImpl extends CalculatorServiceGrpc.CalculatorServi
     }
 
     @Override
-    public StreamObserver<MaxIntegersRequest> maxInteger(StreamObserver<MaxIntegersResponse> responseObserver) {
+    public StreamObserver<MaxIntegersRequest> maxInteger(StreamObserver<MaxIntegersResponse> responseObserver) { // BiDi
         return new StreamObserver<MaxIntegersRequest>() {
             int currentMax = Integer.MIN_VALUE;
 
@@ -105,7 +105,7 @@ public class CalculatorServiceImpl extends CalculatorServiceGrpc.CalculatorServi
     }
 
     @Override
-    public void squareRoot(SquareRootRequest request, StreamObserver<SquareRootResponse> responseObserver) {
+    public void squareRoot(SquareRootRequest request, StreamObserver<SquareRootResponse> responseObserver) { // Unary
         int number = request.getNumber();
 
         if (number >= 0) {
@@ -124,5 +124,7 @@ public class CalculatorServiceImpl extends CalculatorServiceGrpc.CalculatorServi
                     .asRuntimeException()
             );
         }
+
+        responseObserver.onCompleted();
     }
 }

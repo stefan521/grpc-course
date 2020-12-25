@@ -16,6 +16,7 @@ import org.junit.runners.JUnit4;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -51,7 +52,7 @@ public class GreetingServerTest {
         return serverName;
     }
 
-    public GreetServiceGrpc.GreetServiceStub buildAsyncStub() {
+    public GreetServiceGrpc.GreetServiceStub asyncStub() {
         String serverName = registerServerName();
 
         return GreetServiceGrpc.newStub(
@@ -59,7 +60,7 @@ public class GreetingServerTest {
         );
     }
 
-    public GreetServiceGrpc.GreetServiceBlockingStub buildBlockingStub() {
+    public GreetServiceGrpc.GreetServiceBlockingStub blockingStub() {
         String serverName = registerServerName();
 
         return GreetServiceGrpc.newBlockingStub(
@@ -77,7 +78,7 @@ public class GreetingServerTest {
     public void greeterImpl_greet() {
         String name = "Arrrrnold";
 
-        GreetResponse reply = buildBlockingStub().greet(
+        GreetResponse reply = blockingStub().greet(
                 GreetRequest.newBuilder()
                         .setGreeting(Greeting.newBuilder().setFirstName(name))
                         .build()
@@ -92,7 +93,7 @@ public class GreetingServerTest {
         String expectedResponsePrefix = "Hello " + name + ", response number: ";
         AtomicReference<Integer> repliesCount = new AtomicReference<>(0);
 
-        Iterator<GreetManyTimesResponse> reply = buildBlockingStub().greetManyTimes(
+        Iterator<GreetManyTimesResponse> reply = blockingStub().greetManyTimes(
                 GreetManyTimesRequest.newBuilder()
                         .setGreeting(Greeting.newBuilder().setFirstName(name))
                         .build()
@@ -106,13 +107,14 @@ public class GreetingServerTest {
     }
 
     @Test
-    public void greeterImpl_longGreet() {
+    public void greeterImpl_longGreet() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
         List<String> names = new ArrayList<>();
         names.add("stefan");
         names.add("vladimir");
         names.add("josh");
 
-        StreamObserver<LongGreetRequest> requestStream = buildAsyncStub().longGreet(
+        StreamObserver<LongGreetRequest> requestStream = asyncStub().longGreet(
             new StreamObserver<LongGreetResponse>() {
                 @Override
                 public void onNext(LongGreetResponse greetResponse) {
@@ -122,10 +124,15 @@ public class GreetingServerTest {
                 }
 
                 @Override
-                public void onError(Throwable t) { }
+                public void onError(Throwable t) {
+                    t.printStackTrace();
+                    latch.countDown();
+                }
 
                 @Override
-                public void onCompleted() { }
+                public void onCompleted() {
+                    latch.countDown();
+                }
             }
         );
 
@@ -136,16 +143,19 @@ public class GreetingServerTest {
         ));
 
         requestStream.onCompleted();
+
+        latch.await();
     }
 
     @Test
-    public void greeterImpl_greetEveryone() {
+    public void greeterImpl_greetEveryone() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
         Map<String, Integer> names = new HashMap<>();
         names.put("stefan", 0);
         names.put("vladimir", 0);
         names.put("josh", 0);
 
-        StreamObserver<GreetEveryoneRequest> requestStream = buildAsyncStub().greetEveryone(
+        StreamObserver<GreetEveryoneRequest> requestStream = asyncStub().greetEveryone(
                 new StreamObserver<GreetEveryoneResponse>() {
                     @Override
                     public void onNext(GreetEveryoneResponse greetResponse) {
@@ -156,13 +166,14 @@ public class GreetingServerTest {
                     }
 
                     @Override
-                    public void onError(Throwable t) { }
+                    public void onError(Throwable t) {
+                        t.printStackTrace();
+                        latch.countDown();
+                    }
 
                     @Override
                     public void onCompleted() {
-                        assertEquals(2, names.get("stefan").intValue());
-                        assertEquals(1, names.get("josh").intValue());
-                        assertEquals(1, names.get("vladimir").intValue());
+                        latch.countDown();
                     }
                 }
         );
@@ -180,11 +191,16 @@ public class GreetingServerTest {
         );
 
         requestStream.onCompleted();
+        latch.await();
+
+        assertEquals(2, names.get("stefan").intValue());
+        assertEquals(1, names.get("josh").intValue());
+        assertEquals(1, names.get("vladimir").intValue());
     }
 
     @Test
     public void greeterImpl_greetWithDeadlineSuccess() {
-        GreetWithDeadlineResponse response = buildBlockingStub()
+        GreetWithDeadlineResponse response = blockingStub()
                 .withDeadline(Deadline.after(3000, TimeUnit.MILLISECONDS))
                 .greetWithDeadline(
                     GreetWithDeadlineRequest
@@ -205,17 +221,8 @@ public class GreetingServerTest {
         exception.expect(StatusRuntimeException.class);
         exception.expectMessage("DEADLINE_EXCEEDED");
 
-        buildBlockingStub()
+        blockingStub()
                 .withDeadline(Deadline.after(0, TimeUnit.MILLISECONDS))
-                .greetWithDeadline(
-                        GreetWithDeadlineRequest
-                                .newBuilder()
-                                .setGreeting(Greeting
-                                        .newBuilder()
-                                        .setFirstName("josh")
-                                        .build()
-                                )
-                                .build()
-                );
+                .greetWithDeadline(GreetWithDeadlineRequest.getDefaultInstance());
     }
 }

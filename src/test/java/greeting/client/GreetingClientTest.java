@@ -1,8 +1,7 @@
 package greeting.client;
 
 import com.github.stefan521.grpc.greeting.client.GreetingClient;
-import com.proto.greet.GreetRequest;
-import com.proto.greet.GreetResponse;
+import com.proto.greet.*;
 import io.grpc.ManagedChannel;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
@@ -13,7 +12,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import com.proto.greet.GreetServiceGrpc;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 
@@ -39,6 +37,19 @@ public class GreetingClientTest {
                            respObserver.onNext(GreetResponse.getDefaultInstance());
                            respObserver.onCompleted();
                          }
+
+                        @Override
+                        public void greetManyTimes(GreetManyTimesRequest request, StreamObserver<GreetManyTimesResponse> responseObserver) {
+                             for (int i = 0; i < 5; i ++) {
+                                 responseObserver.onNext(
+                                         GreetManyTimesResponse
+                                                 .newBuilder()
+                                                 .setResult(request.getGreeting().getFirstName())
+                                                 .build()
+                                 );
+                             }
+                            responseObserver.onCompleted();
+                        }
                     }));
 
     private GreetingClient client;
@@ -66,7 +77,7 @@ public class GreetingClientTest {
      * changes from the server side.
      */
     @Test
-    public void greet_messageDeliveredToServer() {
+    public void greet_unaryCall() {
         String name = "Peter Parker";
         ArgumentCaptor<GreetRequest> requestCaptor = ArgumentCaptor.forClass(GreetRequest.class);
 
@@ -75,5 +86,17 @@ public class GreetingClientTest {
         verify(serviceImpl)
                 .greet(requestCaptor.capture(), ArgumentMatchers.<StreamObserver<GreetResponse>>any());
         assertEquals(name, requestCaptor.getValue().getGreeting().getFirstName());
+    }
+
+    @Test
+    public void greet_serverStreaming() {
+        String name = "Padabam";
+        ArgumentCaptor<GreetManyTimesRequest> requestCaptor = ArgumentCaptor.forClass(GreetManyTimesRequest.class);
+
+        client.doServerStreamingCall(name);
+        verify(serviceImpl).greetManyTimes(requestCaptor.capture(), ArgumentMatchers.any());
+
+        String receivedName = requestCaptor.getValue().getGreeting().getFirstName();
+        assertEquals(name, receivedName);
     }
 }

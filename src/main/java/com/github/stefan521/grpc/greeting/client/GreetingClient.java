@@ -5,6 +5,7 @@ import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -24,7 +25,7 @@ public class GreetingClient {
     }
 
     private void run() {
-        doUnaryCallWithDeadline(channel);
+        doUnaryCallWithDeadline("Stefan");
 
         channel.shutdown();
     }
@@ -44,20 +45,19 @@ public class GreetingClient {
         return response.getResult();
     }
 
-    private void doServerStreamingCall(ManagedChannel channel) {
+    public void doServerStreamingCall(String name) {
         GreetServiceGrpc.GreetServiceBlockingStub greetClient = GreetServiceGrpc.newBlockingStub(channel);
 
         GreetManyTimesRequest greetManyTimesRequest = GreetManyTimesRequest.newBuilder()
-                .setGreeting(Greeting.newBuilder().setFirstName("Stefan").build())
+                .setGreeting(Greeting.newBuilder().setFirstName(name).build())
                 .build();
 
-        greetClient.greetManyTimes(greetManyTimesRequest)
-                .forEachRemaining(greetManyTimesResponse -> {
-                    System.out.println(greetManyTimesResponse.getResult());
-                });
+        greetClient.greetManyTimes(greetManyTimesRequest).forEachRemaining(greetManyTimesResponse ->
+            System.out.println(greetManyTimesResponse.getResult())
+        );
     }
 
-    private void doClientStreamingCall(ManagedChannel channel) {
+    public void doClientStreamingCall(List<String> names) {
         GreetServiceGrpc.GreetServiceStub asyncClient = GreetServiceGrpc.newStub(channel);
 
         CountDownLatch latch = new CountDownLatch(1);
@@ -82,23 +82,13 @@ public class GreetingClient {
             }
         });
 
-        requestObserver.onNext(LongGreetRequest.newBuilder()
-                .setGreeting(Greeting.newBuilder()
-                            .setFirstName("Stefan")
-                            .build())
-                .build());
-
-        requestObserver.onNext(LongGreetRequest.newBuilder()
-                .setGreeting(Greeting.newBuilder()
-                        .setFirstName("John")
+        names.forEach(name ->
+                requestObserver.onNext(LongGreetRequest.newBuilder()
+                        .setGreeting(Greeting.newBuilder()
+                                .setFirstName(name)
+                                .build())
                         .build())
-                .build());
-
-        requestObserver.onNext(LongGreetRequest.newBuilder()
-                .setGreeting(Greeting.newBuilder()
-                        .setFirstName("Marc")
-                        .build())
-                .build());
+        );
 
         requestObserver.onCompleted();
 
@@ -109,7 +99,7 @@ public class GreetingClient {
         }
     }
 
-    private void doBiDiStreamingCall(ManagedChannel channel) {
+    public void doBiDiStreamingCall(List<String> names) {
         CountDownLatch latch = new CountDownLatch(1);
         GreetServiceGrpc.GreetServiceStub client = GreetServiceGrpc.newStub(channel);
 
@@ -132,7 +122,7 @@ public class GreetingClient {
             }
         });
 
-        Arrays.asList("Stephane", "Jhon", "Marc", "Patricia").forEach(
+        names.forEach(
                 name -> requestStreamObserver.onNext(GreetEveryoneRequest.newBuilder()
                         .setGreeting(Greeting.newBuilder()
                                 .setFirstName(name)
@@ -149,7 +139,7 @@ public class GreetingClient {
         }
     }
 
-    private void doUnaryCallWithDeadline(ManagedChannel channel) {
+    public void doUnaryCallWithDeadline(String name) {
         GreetServiceGrpc.GreetServiceBlockingStub blockingStub = GreetServiceGrpc.newBlockingStub(channel);
 
         // Should work.
@@ -158,7 +148,7 @@ public class GreetingClient {
                     .withDeadline(Deadline.after(3000, TimeUnit.MILLISECONDS))
                     .greetWithDeadline(
                             GreetWithDeadlineRequest.newBuilder()
-                                    .setGreeting(Greeting.newBuilder().setFirstName("Stefan").build())
+                                    .setGreeting(Greeting.newBuilder().setFirstName(name).build())
                                     .build()
                     );
 
@@ -177,7 +167,7 @@ public class GreetingClient {
                     .withDeadline(Deadline.after(100, TimeUnit.MILLISECONDS))
                     .greetWithDeadline(
                             GreetWithDeadlineRequest.newBuilder()
-                                    .setGreeting(Greeting.newBuilder().setFirstName("Stefan").build())
+                                    .setGreeting(Greeting.newBuilder().setFirstName(name).build())
                                     .build()
                     );
 

@@ -18,9 +18,23 @@ public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
     static final String content = "content";
     static final String title = "title";
 
-    private final MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
-    private final MongoDatabase mongoDatabase = mongoClient.getDatabase("myDb");
-    private final MongoCollection<Document> collection = mongoDatabase.getCollection("blog"); // tables are called collections in Mongo
+    private final MongoClient mongoClient;
+    private MongoCollection<Document> collection; // tables are called collections in Mongo
+
+    public BlogServiceImpl(MongoClient mongoClientIn) {
+        mongoClient = mongoClientIn;
+        setUp();
+    }
+
+    public BlogServiceImpl() {
+        mongoClient = MongoClients.create("mongodb://localhost:27017");
+        setUp();
+    }
+
+    private void setUp() {
+        MongoDatabase mongoDatabase = mongoClient.getDatabase("myDb");
+        collection = mongoDatabase.getCollection("blog");
+    }
 
     @Override
     public void createBlog(CreateBlogRequest request, StreamObserver<CreateBlogResponse> responseObserver) {
