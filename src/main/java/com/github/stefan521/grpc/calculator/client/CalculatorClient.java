@@ -8,9 +8,11 @@ import io.grpc.stub.StreamObserver;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Logger;
 
 public class CalculatorClient {
-    ManagedChannel channel;
+    private ManagedChannel channel;
+    private final static Logger logger = Logger.getLogger(CalculatorClient.class.getName());
 
     private void run() {
         channel = ManagedChannelBuilder.forAddress("localhost", 50052)
@@ -23,7 +25,7 @@ public class CalculatorClient {
 //        doBiDiStreamingCall(channel);
         doErrorCall(channel);
 
-        System.out.println("Shutting down server");
+        logger.info("Shutting down server");
         channel.shutdown();
     }
 
@@ -37,7 +39,7 @@ public class CalculatorClient {
 
         SumResponse response = calculatorClient.sum(request);
 
-        System.out.println("We got the sum result of " + response);
+        logger.info("We got the sum result of " + response);
     }
 
     private void doServerStreamingCall(ManagedChannel channel) {
@@ -49,7 +51,7 @@ public class CalculatorClient {
                 .build();
 
         calculatorClient.decomposeIntoPrimes(decomposeIntoPrimesRequest).forEachRemaining(primeFactor ->
-                System.out.println("Next prime factor of " + numberToDecompose + " is " + primeFactor)
+                logger.info("Next prime factor of " + numberToDecompose + " is " + primeFactor)
         );
     }
 
@@ -59,7 +61,7 @@ public class CalculatorClient {
         StreamObserver<AverageIntegersRequest> requestStreamObserver = calculatorClient.averageIntegers(new StreamObserver<AverageIntegersResponse>() {
             @Override
             public void onNext(AverageIntegersResponse value) {
-                System.out.println("Got the number average: " + value.getAverage());
+                logger.info("Got the number average: " + value.getAverage());
             }
 
             @Override
@@ -98,7 +100,7 @@ public class CalculatorClient {
         StreamObserver<MaxIntegersRequest> requestStream = client.maxInteger(new StreamObserver<MaxIntegersResponse>() {
             @Override
             public void onNext(MaxIntegersResponse value) {
-                System.out.println("Server replied with new max " + value.getMaximum());
+                logger.info("Server replied with new max " + value.getMaximum());
             }
 
             @Override
@@ -109,7 +111,7 @@ public class CalculatorClient {
 
             @Override
             public void onCompleted() {
-                System.out.println("Server is done");
+                logger.info("Server is done");
                 latch.countDown();
             }
         });
@@ -137,7 +139,7 @@ public class CalculatorClient {
                     .build()
             );
         } catch (StatusRuntimeException e) {
-            System.out.println("Client got an exception from server.");
+            logger.info("Client got an exception from server.");
             e.printStackTrace();
         }
 

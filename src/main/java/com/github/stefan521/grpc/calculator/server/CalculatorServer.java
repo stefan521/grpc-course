@@ -4,8 +4,10 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 public class CalculatorServer {
+    private final static Logger logger = Logger.getLogger(CalculatorServer.class.getName());
     public static void main(String[] args) throws InterruptedException, IOException {
 
         Server server = ServerBuilder.forPort(50052)
@@ -13,7 +15,7 @@ public class CalculatorServer {
                 .build();
 
         Runtime.getRuntime().addShutdownHook(new Thread( () -> {
-            System.out.println("Shutting down Sum server");
+            logger.info("Shutting down Sum server");
 
             server.shutdown();
         }));

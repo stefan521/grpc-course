@@ -4,15 +4,16 @@ import com.proto.greet.*;
 import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 
 public class GreetingClient {
 
     protected ManagedChannel channel;
+    private final static Logger logger = Logger.getLogger(GreetingClient.class.getName());
 
     public GreetingClient() {
         channel = ManagedChannelBuilder.forAddress("localhost", 50051)
@@ -53,7 +54,7 @@ public class GreetingClient {
                 .build();
 
         greetClient.greetManyTimes(greetManyTimesRequest).forEachRemaining(greetManyTimesResponse ->
-            System.out.println(greetManyTimesResponse.getResult())
+            logger.info(greetManyTimesResponse.getResult())
         );
     }
 
@@ -65,8 +66,8 @@ public class GreetingClient {
         StreamObserver<LongGreetRequest> requestObserver =  asyncClient.longGreet(new StreamObserver<LongGreetResponse>() {
             @Override
             public void onNext(LongGreetResponse value) {
-                System.out.println("Received a response from the server");
-                System.out.println(value.getResult());
+                logger.info("Received a response from the server");
+                logger.info(value.getResult());
             }
 
             @Override
@@ -77,7 +78,7 @@ public class GreetingClient {
 
             @Override
             public void onCompleted() {
-                System.out.println("Server has completed sending us something");
+                logger.info("Server has completed sending us something");
                 latch.countDown();
             }
         });
@@ -106,7 +107,7 @@ public class GreetingClient {
         StreamObserver<GreetEveryoneRequest> requestStreamObserver = client.greetEveryone(new StreamObserver<GreetEveryoneResponse>() {
             @Override
             public void onNext(GreetEveryoneResponse value) {
-                System.out.println("Response from serer: " + value.getResult());
+                logger.info("Response from serer: " + value.getResult());
             }
 
             @Override
@@ -117,7 +118,7 @@ public class GreetingClient {
 
             @Override
             public void onCompleted() {
-                System.out.println("Server is done");
+                logger.info("Server is done");
                 latch.countDown();
             }
         });
@@ -152,10 +153,10 @@ public class GreetingClient {
                                     .build()
                     );
 
-            System.out.println("Response: " + response);
+            logger.info("Response: " + response);
         } catch (StatusRuntimeException e) {
             if (e.getStatus() == Status.DEADLINE_EXCEEDED) {
-                System.out.println("Deadline has been exceeded, we don't want the answer");
+                logger.warning("Deadline has been exceeded, we don't want the answer");
             } else {
                 e.printStackTrace();
             }
@@ -171,10 +172,10 @@ public class GreetingClient {
                                     .build()
                     );
 
-            System.out.println("Response: " + response);
+            logger.info("Response: " + response);
         } catch (StatusRuntimeException e) {
             if (e.getStatus() == Status.DEADLINE_EXCEEDED) {
-                System.out.println("Deadline has been exceeded, we don't want the answer");
+                logger.warning("Deadline has been exceeded, we don't want the answer");
             } else {
                 e.printStackTrace();
             }

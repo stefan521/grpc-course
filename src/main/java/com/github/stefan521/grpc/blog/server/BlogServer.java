@@ -4,16 +4,20 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.protobuf.services.ProtoReflectionService;
 
+import java.util.logging.Logger;
+
 public class BlogServer {
+    private final static Logger logger = Logger.getLogger(BlogServer.class.getName());
 
     public static void main(String[] args) {
+
         Server server = ServerBuilder.forPort(50051)
                 .addService(new BlogServiceImpl())
                 .addService(ProtoReflectionService.newInstance())
                 .build();
 
         Runtime.getRuntime().addShutdownHook(new Thread( () -> {
-            System.out.println("Shutting down Sum server");
+            logger.info("Shutting down Sum server");
 
             server.shutdown();
         }));

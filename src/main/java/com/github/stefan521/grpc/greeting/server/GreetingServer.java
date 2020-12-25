@@ -4,10 +4,13 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 public class GreetingServer {
+    private final static Logger logger = Logger.getLogger(GreetingServer.class.getName());
+
     public static void main(String[] args) throws IOException, InterruptedException {
-        System.out.println("Hello gRPC");
+        logger.info("Hello gRPC");
 
         Server server = ServerBuilder.forPort(50051)
                 .addService(new GreetServiceImpl())
@@ -17,9 +20,9 @@ public class GreetingServer {
 
         Runtime.getRuntime()
             .addShutdownHook(new Thread( () -> {
-                System.out.println("Received shutdown request");
+                logger.info("Received shutdown request");
                 server.shutdown();
-                System.out.println("Successfully stopped the server");
+                logger.info("Successfully stopped the server");
             }));
 
         server.awaitTermination(); // blocks main thread until server terminates

@@ -4,8 +4,11 @@ import com.proto.blog.*;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
+import java.util.logging.Logger;
+
 public class BlogClient {
     ManagedChannel channel;
+    private final static Logger logger = Logger.getLogger(BlogClient.class.getName());
 
     private void run() {
         channel = ManagedChannelBuilder.forAddress("localhost", 50051)
@@ -39,7 +42,7 @@ public class BlogClient {
                 )
                 .build());
 
-        System.out.println("Created Blog Response " + response);
+        logger.info("Created Blog Response " + response);
     }
 
     private void readBlog(ManagedChannel channel, String blogId) {
@@ -51,14 +54,14 @@ public class BlogClient {
                         .build()
         );
 
-        System.out.println("Read Blog Response " + response);
+        logger.info("Read Blog Response " + response);
     }
 
     private void listBlogs(ManagedChannel channel) {
         BlogServiceGrpc.BlogServiceBlockingStub blogClient = BlogServiceGrpc.newBlockingStub(channel);
 
         blogClient.listBlogs(ListBlogsRequest.newBuilder().build()).forEachRemaining(
-                listBlogsResponse -> System.out.println(listBlogsResponse.getBlog())
+                listBlogsResponse -> logger.info(listBlogsResponse.getBlog().toString())
         );
     }
 
@@ -71,7 +74,7 @@ public class BlogClient {
                         .build()
         );
 
-        System.out.println("Delete Blog Response " + response);
+        logger.info("Delete Blog Response " + response);
     }
 
     private void updateBlog(ManagedChannel channel, String blogId) {
@@ -90,11 +93,11 @@ public class BlogClient {
                         .build()
         );
 
-        System.out.println("Update Blog Response " + response);
+        logger.info("Update Blog Response " + response);
     }
 
     public static void main(String[] args) {
-        System.out.println("Hello! I'm a Blog gRPC client");
+        logger.info("Hello! I'm a Blog gRPC client");
 
         BlogClient client = new BlogClient();
         client.run();

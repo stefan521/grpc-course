@@ -11,6 +11,8 @@ import io.grpc.stub.StreamObserver;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
+import java.util.logging.Logger;
+
 import static com.mongodb.client.model.Filters.eq;
 
 public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
@@ -20,6 +22,7 @@ public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
 
     private final MongoClient mongoClient;
     private MongoCollection<Document> collection; // tables are called collections in Mongo
+    private final static Logger logger = Logger.getLogger(BlogServiceImpl.class.getName());
 
     public BlogServiceImpl(MongoClient mongoClientIn) {
         mongoClient = mongoClientIn;
@@ -38,7 +41,7 @@ public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
 
     @Override
     public void createBlog(CreateBlogRequest request, StreamObserver<CreateBlogResponse> responseObserver) {
-        System.out.println("Received Create Blog Request");
+        logger.info("Received Create Blog Request");
 
         Blog blog = request.getBlog();
 
@@ -46,13 +49,13 @@ public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
                 .append(title, blog.getTitle())
                 .append(content, blog.getContent());
 
-        System.out.println("Inserting Blog");
+        logger.info("Inserting Blog");
 
         collection.insertOne(doc);
         // mongoDb generates this when we insert the doc
         String id = doc.getObjectId("_id").toString();
 
-        System.out.println("Inserted Blog " + id);
+        logger.info("Inserted Blog " + id);
 
         CreateBlogResponse response = CreateBlogResponse.newBuilder()
                 .setBlog(blog.toBuilder().setId(id).build())
@@ -67,7 +70,7 @@ public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
 
         String blogId = request.getBlogId();
 
-        System.out.println("Searching for blog with id " + blogId);
+        logger.info("Searching for blog with id " + blogId);
 
         Document document = null;
 
@@ -81,7 +84,7 @@ public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
             );
         }
 
-        System.out.println("Searched for blog with id " + blogId + " result: " + document);
+        logger.info("Searched for blog with id " + blogId + " result: " + document);
 
         if (document != null) {
             Blog blog = Blog.newBuilder()
@@ -170,7 +173,7 @@ public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
 
     @Override
     public void listBlogs(ListBlogsRequest request, StreamObserver<ListBlogsResponse> responseObserver) {
-        System.out.println("Received List Blogs Request");
+        logger.info("Received List Blogs Request");
 
         collection.find().iterator().forEachRemaining(document -> responseObserver.onNext(
                 ListBlogsResponse.newBuilder().setBlog(documentToBlog(document)).build()

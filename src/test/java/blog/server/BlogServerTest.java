@@ -8,7 +8,6 @@ import com.mongodb.client.MongoDatabase;
 import com.proto.blog.BlogServiceGrpc;
 import com.proto.blog.ReadBlogRequest;
 import com.proto.blog.ReadBlogResponse;
-import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
