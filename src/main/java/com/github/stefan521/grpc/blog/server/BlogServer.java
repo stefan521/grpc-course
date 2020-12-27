@@ -3,11 +3,11 @@ package com.github.stefan521.grpc.blog.server;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.protobuf.services.ProtoReflectionService;
-
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BlogServer {
-    private final static Logger logger = Logger.getLogger(BlogServer.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(BlogServiceImpl.class);
 
     public static void main(String[] args) {
 

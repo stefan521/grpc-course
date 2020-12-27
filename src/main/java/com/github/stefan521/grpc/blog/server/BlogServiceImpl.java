@@ -10,8 +10,8 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -22,7 +22,7 @@ public class BlogServiceImpl extends BlogServiceGrpc.BlogServiceImplBase {
 
     private final MongoClient mongoClient;
     private MongoCollection<Document> collection; // tables are called collections in Mongo
-    private final static Logger logger = Logger.getLogger(BlogServiceImpl.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(BlogServiceImpl.class);
 
     public BlogServiceImpl(MongoClient mongoClientIn) {
         mongoClient = mongoClientIn;

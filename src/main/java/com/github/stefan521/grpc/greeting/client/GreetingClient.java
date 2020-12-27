@@ -1,19 +1,21 @@
 package com.github.stefan521.grpc.greeting.client;
 
+import com.github.stefan521.grpc.blog.server.BlogServiceImpl;
 import com.proto.greet.*;
 import io.grpc.*;
 import io.grpc.stub.StreamObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 
 public class GreetingClient {
 
     protected ManagedChannel channel;
-    private final static Logger logger = Logger.getLogger(GreetingClient.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(BlogServiceImpl.class);
 
     public GreetingClient() {
         channel = ManagedChannelBuilder.forAddress("localhost", 50051)
@@ -156,7 +158,7 @@ public class GreetingClient {
             logger.info("Response: " + response);
         } catch (StatusRuntimeException e) {
             if (e.getStatus() == Status.DEADLINE_EXCEEDED) {
-                logger.warning("Deadline has been exceeded, we don't want the answer");
+                logger.warn("Deadline has been exceeded, we don't want the answer");
             } else {
                 e.printStackTrace();
             }
@@ -175,7 +177,7 @@ public class GreetingClient {
             logger.info("Response: " + response);
         } catch (StatusRuntimeException e) {
             if (e.getStatus() == Status.DEADLINE_EXCEEDED) {
-                logger.warning("Deadline has been exceeded, we don't want the answer");
+                logger.warn("Deadline has been exceeded, we don't want the answer");
             } else {
                 e.printStackTrace();
             }

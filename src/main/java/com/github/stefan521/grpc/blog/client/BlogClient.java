@@ -1,14 +1,15 @@
 package com.github.stefan521.grpc.blog.client;
 
+import com.github.stefan521.grpc.blog.server.BlogServiceImpl;
 import com.proto.blog.*;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BlogClient {
     ManagedChannel channel;
-    private final static Logger logger = Logger.getLogger(BlogClient.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(BlogServiceImpl.class);
 
     private void run() {
         channel = ManagedChannelBuilder.forAddress("localhost", 50051)

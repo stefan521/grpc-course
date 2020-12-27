@@ -1,18 +1,20 @@
 package com.github.stefan521.grpc.calculator.client;
 
+import com.github.stefan521.grpc.blog.server.BlogServiceImpl;
 import com.proto.greet.*;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Logger;
 
 public class CalculatorClient {
     private ManagedChannel channel;
-    private final static Logger logger = Logger.getLogger(CalculatorClient.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(BlogServiceImpl.class);
 
     private void run() {
         channel = ManagedChannelBuilder.forAddress("localhost", 50052)

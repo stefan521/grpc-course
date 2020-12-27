@@ -1,13 +1,15 @@
 package com.github.stefan521.grpc.calculator.server;
 
+import com.github.stefan521.grpc.blog.server.BlogServiceImpl;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 public class CalculatorServer {
-    private final static Logger logger = Logger.getLogger(CalculatorServer.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(BlogServiceImpl.class);
     public static void main(String[] args) throws InterruptedException, IOException {
 
         Server server = ServerBuilder.forPort(50052)
